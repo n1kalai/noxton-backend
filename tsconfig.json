@@ -12,5 +12,7 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true
+  },
+  "prettier/prettier": ["error", {"singleQuote": true, "parser": "flow"}],
   }
-}
+
