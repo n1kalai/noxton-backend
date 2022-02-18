@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApplicantsModule } from './applicants/applicants.module';
+import { PDFFile } from './pdf/pdf.entity';
 
 @Module({
   imports: [
@@ -12,10 +13,12 @@ import { ApplicantsModule } from './applicants/applicants.module';
       username: 'postgres',
       password: '141777',
       database: 'redberry',
-      synchronize: true
+      entities: [__dirname + '/**/*.entity.{ts,js}'],
+      synchronize: true,
     }),
-    MulterModule.register({ dest: './files/*' }),
-    ApplicantsModule
+    MulterModule.register({ dest: './uploads/*' }),
+    ApplicantsModule,
+    PDFFile,
   ],
   controllers: [],
   providers: [],
