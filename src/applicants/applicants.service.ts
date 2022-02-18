@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PDFFile } from 'src/pdf/pdf.entity';
-import { createQueryBuilder, getRepository, Repository } from 'typeorm';
+import { Updates } from 'src/updates/updates.entity';
+import { Between, createQueryBuilder, getRepository, Repository } from 'typeorm';
 import { Applicants } from './applicants.entity';
 import { ApplicantCredentials } from './dto/ApplicantCredentials.dto';
 
@@ -12,6 +13,8 @@ export class ApplicantsService {
     private applicantsRepo: Repository<Applicants>,
     @InjectRepository(PDFFile)
     private pdfRepo: Repository<PDFFile>,
+    @InjectRepository(Updates)
+    private updatesRepo: Repository<Updates>,
   ) {}
 
   async createApplicant(
@@ -19,28 +22,26 @@ export class ApplicantsService {
     file: any,
   ): Promise<ApplicantCredentials> {
     delete body.cv;
-    console.log(file);
-
     const PDF = new PDFFile();
     const User = new Applicants();
 
     PDF.name = file.originalname;
     PDF.size = file.size;
-    PDF.path = `http://localhost:3030/applicants/pdf/${file.filename}`;
+    PDF.path = `http://localhost:3030/applicants/cv/${file.filename}`;
     const savedPdf = await this.pdfRepo.save(PDF);
 
     for (let x in body) {
       User[x] = body[x];
     }
 
-    User.pdf = savedPdf;
+    User.cv = savedPdf;
 
     return this.applicantsRepo.save(User);
   }
 
-  async getApplicants(): Promise<ApplicantCredentials[]> {
-    //@ts-ignore
-    return this.applicantsRepo.find({ relations: ['pdf']});
+  async getApplicants(): Promise<Applicants[]> {
+
+    return this.applicantsRepo.find({ relations: ['cv']});
   }
 
   async getApplicantsStatusesCount() {
@@ -58,7 +59,7 @@ export class ApplicantsService {
       counts["all"] = all
       return counts
     }catch(err){
-      throw new Error("something went wrong");
+      throw new Error(`something went wrong: ${err.message}`);
       
     }
   }
@@ -80,9 +81,46 @@ export class ApplicantsService {
 
     async getApplicant(id: string): Promise<Applicants> {
       try{
-        return this.applicantsRepo.findOne({where: {id}, relations: ['pdf']})
+        return this.applicantsRepo.findOne({where: {id}, relations: ['cv', "updates"]})
       }catch(err) {
-        throw new Error(`applicant with id ${id} does not exist`);
+        throw new NotFoundException(`applicant with id: ${id} does not exist`);
       }
+    }
+
+    async getApplicantsByDate(data): Promise<Applicants[]> {
+      const {startDate,endDate} = data
+     const query = await this.applicantsRepo.find({
+       where: {createdAt: Between(startDate, endDate)}
+     })
+      return query;
+    }
+
+    async addUpdateToApplicant(body): Promise<Applicants> {
+      const {fieldName,fieldValue,applicantId: id,type} = body;
+
+      const applicant = await this.applicantsRepo.findOne({where: {id}, relations: ["updates"]})
+      if(!applicant){
+        throw new NotFoundException(`applicant with id: ${id} not found`)
+      }
+
+      try {
+        
+        const updates = new Updates();
+        updates.type = fieldName;
+        updates.beforeUpdate = applicant[fieldName]
+        updates.afterUpdate = fieldValue
+        updates.userName = "Nikoloz Palag"  // we should retrive user credientals from request
+        
+        applicant[fieldName] = fieldValue
+        const savedUpdate = await this.updatesRepo.save(updates)
+
+        applicant.updates.push(savedUpdate);
+      
+        return this.applicantsRepo.save(applicant)
+
+    }catch(err){
+      throw new Error(`something went wrong: ${err.message}`)
+    }
+     
     }
 }

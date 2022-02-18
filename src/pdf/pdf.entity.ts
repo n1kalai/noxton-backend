@@ -15,6 +15,6 @@ export class PDFFile {
   @Column({ nullable: true })
   path: string;
 
-  @OneToOne(() => Applicants, (ap) => ap.pdf, { onDelete: 'CASCADE' })
+  @OneToOne(() => Applicants, (ap) => ap.cv, { onDelete: 'CASCADE' })
   user: Applicants;
 }

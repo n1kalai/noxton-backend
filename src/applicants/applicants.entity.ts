@@ -1,10 +1,12 @@
 import { PDFFile } from 'src/pdf/pdf.entity';
+import { Updates } from 'src/updates/updates.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -53,8 +55,11 @@ export class Applicants extends BaseEntity {
 
   @OneToOne(() => PDFFile, (pd) => pd.user, { onDelete: 'CASCADE' })
   @JoinColumn({
-    name: 'pdf-ID',
+    name: 'cv-ID',
     referencedColumnName: 'id',
   })
-  pdf: PDFFile;
+  cv: PDFFile;
+
+  @OneToMany(() => Updates, u => u.applicant)
+  updates: Updates[]
 }

@@ -1,3 +1,4 @@
+import { Applicants } from 'src/applicants/applicants.entity';
 import {
   Body,
   Controller,
@@ -40,8 +41,8 @@ export class ApplicantsController {
     return this.applicantsSerice.getApplicants();
   }
 
-  @Get('/pdf/:pdfpath')
-  seeUploadedFile(@Param('pdfpath') pdf: string, @Res() res) {
+  @Get('/cv/:cvpath')
+  seeUploadedFile(@Param('cvpath') pdf: string, @Res() res) {
     return res.sendFile(pdf, { root: './uploads' });
   }
 
@@ -58,5 +59,18 @@ export class ApplicantsController {
   @Get("/byId/:id")
   getApplicant(@Param('id') id: string) : Promise<ApplicantCredentials> {
     return this.applicantsSerice.getApplicant(id);
+  }
+
+  @Post("/by-date")
+  getApplicantsByDate(@Body() body: {
+    startDate: string
+    endDate: string
+}) : Promise<Applicants[]> {
+    return this.applicantsSerice.getApplicantsByDate(body);
+  }
+
+  @Post("/update")
+  addUpdateToApplicant(@Body() body: any) : Promise<Applicants> {
+    return this.applicantsSerice.addUpdateToApplicant(body);
   }
 }

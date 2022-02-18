@@ -3,6 +3,9 @@ import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ApplicantsModule } from './applicants/applicants.module';
 import { PDFFile } from './pdf/pdf.entity';
+import { UpdatesService } from './updates/updates.service';
+import { UpdatesController } from './updates/updates.controller';
+import { UpdatesModule } from './updates/updates.module';
 
 @Module({
   imports: [
@@ -19,6 +22,7 @@ import { PDFFile } from './pdf/pdf.entity';
     MulterModule.register({ dest: './uploads/*' }),
     ApplicantsModule,
     PDFFile,
+    UpdatesModule
   ],
   controllers: [],
   providers: [],

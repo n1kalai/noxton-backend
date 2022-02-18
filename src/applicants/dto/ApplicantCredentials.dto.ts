@@ -1,3 +1,5 @@
+import { PDFFile } from "../../pdf/pdf.entity";
+
 export type ApplicantCredentials = {
   id: string;
   firstName: string;
@@ -8,5 +10,5 @@ export type ApplicantCredentials = {
   linkedInURL: string;
   status: string;
   experience: string;
-  cv?: File;
+  cv?: PDFFile;
 };
